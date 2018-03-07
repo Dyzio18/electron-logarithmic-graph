@@ -1,5 +1,5 @@
 {
-  "name": "electron-quick-start",
+  "name": "electron-logarithmic-graph",
   "version": "1.0.0",
   "description": "A minimal Electron application",
   "main": "main.js",
@@ -14,10 +14,13 @@
     "tutorial",
     "demo"
   ],
-  "author": "GitHub",
-  "license": "CC0-1.0",
+  "author": "Patryk Nizio",
+  "license": "Apache License Version 2.0",
   "devDependencies": {
     "electron": "~1.8.2",
     "electron-reload": "^1.2.2"
+  },
+  "dependencies": {
+    "chart.js": "^2.7.2"
   }
 }
