@@ -1,96 +1,35 @@
-const fs = require('fs');
-const fileName = './baza.bin';
-const chart = require('chart.js');
+const fs = require('fs')
+const fileName = './baza.bin'
+const chart = require('chart.js')
+const Context = require('./context');
+const Data = require('./dataProcessing');
 
-const row = 120; 
-const number = 4; // float - 4 byte
-const rowSize = row*number;
+const context = new Context(120,3,38);
+const data = new Data(context,fileName);
 
-let xAxis = new Array(row);
-let yAxis = new Array(row);
-let position = 0;
-
-// TODO: use promise [ ]
-
-const readRow = (position, rowSize, number) => {
-    fs.open(fileName, 'r', function(err, fd) {
-        if(err) {
-            // TODO: display error in app [ ]
-            // ...
-            return console.error(err.message);
-        }
-
-        let buffer = new Buffer(rowSize); 
-        position = fs.read(fd, buffer, 0, rowSize, position, function(err, bytesRead) {
-            if(err) {
-                return console.error(err);
-            }
-        });
-
-        for(let i = 0; i < rowSize; i=i+number){
-            console.log(buffer.readFloatLE(i));
-        }
-    });
-}
-
-readRow(position,rowSize,number);
-readRow(position+rowSize,rowSize,number); // TO CHANGE -> use promiese/await
+let xAxis = new Float32Array(context.row)
+let yAxis = new Float32Array(context.row)
+let position = 0
 
 const chartGenerate = () => {
-   
-    window.chartColors = {
-        red: 'rgb(255, 99, 132)',
-        orange: 'rgb(255, 159, 64)',
-        yellow: 'rgb(255, 205, 86)',
-        green: 'rgb(75, 192, 192)',
-        blue: 'rgb(54, 162, 235)',
-        purple: 'rgb(153, 102, 255)',
-        grey: 'rgb(201, 203, 207)'
-    };
-  
-	var randomScalingFactor = function() {
-		return Math.ceil(Math.random() * 10.0) * Math.pow(10, Math.ceil(Math.random() * 5));
-	};
-
-	var config = {
+	let tmp = 1
+	let config = {
 		type: 'line',
 		data: {
-			labels: ['test', 'test', 'test', 'test', 'test', 'test', 'test'],
-			datasets: [{
-				label: 'Line_2',
-				backgroundColor: window.chartColors.red,
-				borderColor: window.chartColors.red,
-				fill: false,
-				data: [
-					randomScalingFactor(),
-					randomScalingFactor(),
-					randomScalingFactor(),
-					randomScalingFactor(),
-					randomScalingFactor(),
-					randomScalingFactor(),
-					randomScalingFactor()
-				],
-			}, {
-				label: 'Line_2',
-				backgroundColor: window.chartColors.blue,
-				borderColor: window.chartColors.blue,
-				fill: false,
-				data: [
-					randomScalingFactor(),
-					randomScalingFactor(),
-					randomScalingFactor(),
-					randomScalingFactor(),
-					randomScalingFactor(),
-					randomScalingFactor(),
-					randomScalingFactor()
-				],
-			}]
+			labels: Array(context.row).fill(''),
+			datasets: []
 		},
 		options: {
 			responsive: true,
+			animation: {
+				duration: 0, // general animation time
+			},
+			legend:{
+				position: 'right',
+			},
 			title: {
 				display: true,
-				text: 'Title - TEST'
+				text: 'Wykresy Logarytmiczne'
 			},
 			scales: {
 				xAxes: [{
@@ -98,29 +37,43 @@ const chartGenerate = () => {
 				}],
 				yAxes: [{
 					display: true,
-					type: 'logarithmic',
+					position: "left",
+					id: "y-axis-0",
+					fontColor: '#333',
+					ticks: {
+						max: 5,
+						min: -1,
+					}
 				}]
 			}
 		}
-	};
-
+	}
 	window.onload = function() {
-		var ctx = document.getElementById('canvas').getContext('2d');
-		window.myLine = new Chart(ctx, config);
-	};
-
-	document.getElementById('randomizeData').addEventListener('click', function() {
-		config.data.datasets.forEach(function(dataset) {
-			dataset.data = dataset.data.map(function() {
-				return randomScalingFactor();
-			});
-
-		});
-
-		window.myLine.update();
-	});
-	
-    
+		var ctx = document.getElementById('canvas').getContext('2d')
+		window.myLine = new Chart(ctx, config)
+	}
 }
 
-chartGenerate();
+chartGenerate()
+
+data.readGeneration().then((resolve) => {
+
+	let buff = new Float32Array(context.row)
+	let padd = new Float32Array(context.padding)
+	let k = 0
+
+	for(let i = 0; i < context.generation; i++){
+		buff = resolve.buffer.slice(k, k+123).slice(3,123)
+		padd = resolve.buffer.slice(k, k+123).slice(0,3)
+		let dataSet = {
+			label: Number((padd[2]).toFixed(1)).toString(),
+			data:buff.map(elem => elem),
+			backgroundColor: window.chartColors = `#${(Math.random()*0xFFFFFF<<0).toString(16).padStart(6, 0)}`,
+			fill: false
+		}
+		window.myLine.config.data.datasets[i] = dataSet
+		k+=123
+	}
+	window.myLine.update()
+
+})
