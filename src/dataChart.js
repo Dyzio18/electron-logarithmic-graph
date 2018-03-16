@@ -54,12 +54,21 @@ const chartDraw = (context, event) => {
 		let dataSet = {
 			label: Number((padd[2]).toFixed(1)).toString(),
 			data:buff, /*.map(elem => Math.pow(10,elem) ),*/
-			backgroundColor: window.chartColors = `#${(Math.random()*0xFFFFFF<<0).toString(16).padStart(6, 0)}`,
+			backgroundColor: window.chartColors = context.colors[i],
 			fill: false
 		}
 		window.myLine.config.data.datasets[i] = dataSet
-		if(event === 'previous') k-=123
-		else k+=123
+
+		/* Disable butons when position out of range*/ 
+		if(event === 'previous') {
+			if(padd[0] === 1 && padd[1].toFixed(1) <= 0.1) context.disable = 'previous'
+			else context.disable = ''
+			k-=123
+		} else {
+			if(padd[0] === 32 && padd[1].toFixed(1) >= 1000) context.disable = 'next'
+			else context.disable = ''
+			k+=123
+		} 
 	}
 	/* TODO: Skip first generations for D/d = 1 */
 	context.position = k;

@@ -8,7 +8,9 @@ module.exports = class Context {
         this.padding = padding
         this.rowSize = row*4
         this.position = 0
+        this.disable = 'previous'
         this.data
+        this.colors = new Array(38).fill('#333').map( elem => `#${(Math.random()*0xFFFFFF<<0).toString(16).padStart(6, 0)}`)
     }   
 
     fileSize(){
