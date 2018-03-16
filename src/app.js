@@ -14,6 +14,7 @@ const context = new Context(120,3,38);
 const data = new Data(context,fileName);
 
 const next = document.getElementById('next')
+const nextFast = document.getElementById('nextFast')
 const previous = document.getElementById('previous')
 const close = document.getElementById('close')
 const save = document.getElementById('save')
